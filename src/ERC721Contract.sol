@@ -13,6 +13,7 @@ contract ERC721Contract is ERC721, ERC721Enumerable, ERC721Pausable, Ownable {
     uint16 private maxSupply = 5;
     bool private _allowPublicSale = false;
     bool private _allowCommunitySale = false;
+    mapping(address => bool) communityMembers;
 
     constructor(
         address initialOwner
@@ -31,9 +32,19 @@ contract ERC721Contract is ERC721, ERC721Enumerable, ERC721Pausable, Ownable {
     }
 
     function communityMint() public payable {
+        require(
+            communityMembers[msg.sender],
+            "you do not have community membership"
+        );
         require(msg.value == communityPrice, "insufficient pay amount");
         require(_allowCommunitySale, "public sale is not allowed");
         internalMint();
+    }
+
+    function addToCommunity(address[] memory members) external onlyOwner {
+        for (uint i = 0; i < members.length; i++) {
+            communityMembers[members[i]] = true;
+        }
     }
 
     function publicMint() public payable {
